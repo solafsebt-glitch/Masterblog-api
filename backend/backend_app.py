@@ -38,10 +38,41 @@ def find_post_by_id(post_id):
     return None
 
 
+def filter_posts_by_query(posts, title_query, content_query):
+    """Return posts matching title or content search terms."""
+    title_term = title_query.strip().lower()
+    content_term = content_query.strip().lower()
+
+    if not title_term and not content_term:
+        return []
+
+    matching_posts = []
+    for post in posts:
+        post_title = post.get("title", "").lower()
+        post_content = post.get("content", "").lower()
+
+        title_matched = bool(title_term and title_term in post_title)
+        content_matched = bool(content_term and content_term in post_content)
+
+        if title_matched or content_matched:
+            matching_posts.append(post)
+
+    return matching_posts
+
+
 @app.route("/api/posts", methods=["GET"])
 def get_posts():
     """Return all blog posts as a JSON list."""
     return jsonify(POSTS), 200
+
+
+@app.route("/api/posts/search", methods=["GET"])
+def search_posts():
+    """Search posts by title or content across GET, POST, DELETE, and SEARCH."""
+    title_query = request.args.get("title", "")
+    content_query = request.args.get("content", "")
+    results = filter_posts_by_query(POSTS, title_query, content_query)
+    return jsonify(results), 200
 
 
 @app.route("/api/posts", methods=["POST"])
