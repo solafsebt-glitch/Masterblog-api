@@ -9,6 +9,9 @@ POSTS = [
     {"id": 2, "title": "Second post", "content": "This is the second post."},
 ]
 
+VALID_SORT_FIELDS = {"title", "content"}
+VALID_SORT_DIRECTIONS = {"asc", "desc"}
+
 
 def generate_next_id(posts):
     """Generate the next unique integer ID based on existing posts."""
@@ -60,10 +63,46 @@ def filter_posts_by_query(posts, title_query, content_query):
     return matching_posts
 
 
+def sort_posts(posts, sort_field, direction):
+    """Validate sort parameters and return a sorted copy of posts or error dict."""
+    if sort_field is None and direction is None:
+        return list(posts), None
+
+    field = (sort_field or "title").strip().lower()
+    order = (direction or "asc").strip().lower()
+
+    if field not in VALID_SORT_FIELDS:
+        return (
+            None,
+            f"Invalid sort field '{sort_field}'. Allowed values: title, content.",
+        )
+
+    if order not in VALID_SORT_DIRECTIONS:
+        return (
+            None,
+            f"Invalid sort direction '{direction}'. Allowed values: asc, desc.",
+        )
+
+    reverse_order = order == "desc"
+    sorted_list = sorted(
+        posts,
+        key=lambda post: str(post.get(field, "")).lower(),
+        reverse=reverse_order,
+    )
+    return sorted_list, None
+
+
 @app.route("/api/posts", methods=["GET"])
 def get_posts():
-    """Return all blog posts as a JSON list."""
-    return jsonify(POSTS), 200
+    """Return blog posts as JSON, optionally sorted by field and direction."""
+    sort_field = request.args.get("sort")
+    direction = request.args.get("direction")
+
+    sorted_posts, error_message = sort_posts(POSTS, sort_field, direction)
+    if error_message:
+        return jsonify({"error": error_message}), 400
+
+    return jsonify(sorted_posts), 200
 
 
 @app.route("/api/posts/search", methods=["GET"])
