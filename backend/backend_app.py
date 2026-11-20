@@ -1,13 +1,14 @@
-from flask import Flask, jsonify,request
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # This will enable CORS for all routes
+CORS(app)
 
 POSTS = [
     {"id": 1, "title": "First post", "content": "This is the first post."},
     {"id": 2, "title": "Second post", "content": "This is the second post."},
 ]
+
 
 def generate_next_id(posts):
     """Generate the next unique integer ID based on existing posts."""
@@ -17,7 +18,7 @@ def generate_next_id(posts):
 
 
 def validate_post_payload(data):
-    """Validate incoming JSON payload and return a list of missing required fields."""
+    """Validate incoming JSON payload and return missing required fields."""
     if not isinstance(data, dict):
         return ["title", "content"]
 
@@ -27,6 +28,14 @@ def validate_post_payload(data):
         if not isinstance(value, str) or not value.strip():
             missing_fields.append(field)
     return missing_fields
+
+
+def find_post_by_id(post_id):
+    """Find and return a post dictionary by its integer ID, or None if not found."""
+    for post in POSTS:
+        if post["id"] == post_id:
+            return post
+    return None
 
 
 @app.route("/api/posts", methods=["GET"])
@@ -61,6 +70,22 @@ def add_post():
     return jsonify(new_post), 201
 
 
+@app.route("/api/posts/<int:post_id>", methods=["DELETE"])
+def delete_post(post_id):
+    """Delete an existing blog post by ID and return a confirmation message."""
+    post = find_post_by_id(post_id)
+
+    if post is None:
+        return jsonify({"error": f"Post with id {post_id} was not found."}), 404
+
+    POSTS.remove(post)
+    return (
+        jsonify(
+            {"message": f"Post with id {post_id} has been deleted successfully."}
+        ),
+        200,
+    )
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5002, debug=True)
-
