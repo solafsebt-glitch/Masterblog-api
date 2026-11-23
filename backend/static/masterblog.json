@@ -1,0 +1,209 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Masterblog API",
+    "description": "RESTful API documentation for managing blog posts.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:5002",
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "tags": [
+    {
+      "name": "Post",
+      "description": "Post API - CRUD, search, and sorting"
+    }
+  ],
+  "definitions": {
+    "Post": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+        "title": {
+          "type": "string",
+          "example": "First post"
+        },
+        "content": {
+          "type": "string",
+          "example": "This is the first post."
+        }
+      }
+    },
+    "NewPostInput": {
+      "type": "object",
+      "required": ["title", "content"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "example": "Third post"
+        },
+        "content": {
+          "type": "string",
+          "example": "This is the third post."
+        }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string",
+          "example": "Missing required fields"
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/posts": {
+      "get": {
+        "summary": "Returns all posts",
+        "description": "Retrieve all blog posts, optionally sorted by title or content.",
+        "tags": ["Post"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "type": "string",
+            "enum": ["title", "content"],
+            "required": false,
+            "description": "Field to sort posts by (title or content)."
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "required": false,
+            "description": "Sort direction (asc or desc)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Post"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid sort field or direction",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add a new post",
+        "description": "Create a new blog post with a unique integer ID.",
+        "tags": ["Post"],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "JSON object containing title and content.",
+            "schema": {
+              "$ref": "#/definitions/NewPostInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Post created successfully",
+            "schema": {
+              "$ref": "#/definitions/Post"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid required fields",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/posts/search": {
+      "get": {
+        "summary": "Search posts",
+        "description": "Search blog posts by title and/or content query parameters.",
+        "tags": ["Post"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "Search term to match against post title."
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "Search term to match against post content."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching posts list (empty list if none match)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Post"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/posts/{id}": {
+      "delete": {
+        "summary": "Delete a post by ID",
+        "description": "Delete an existing blog post using its integer ID.",
+        "tags": ["Post"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "type": "integer",
+            "required": true,
+            "description": "ID of the post to delete."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Post deleted successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Post with id 1 has been deleted successfully."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Post not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}

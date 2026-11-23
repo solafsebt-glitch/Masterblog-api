@@ -1,8 +1,19 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 
 app = Flask(__name__)
 CORS(app)
+
+SWAGGER_URL = "/api/docs"
+API_URL = "/static/masterblog.json"
+
+swagger_ui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={"app_name": "Masterblog API"},
+)
+app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
 POSTS = [
     {"id": 1, "title": "First post", "content": "This is the first post."},
@@ -64,7 +75,7 @@ def filter_posts_by_query(posts, title_query, content_query):
 
 
 def sort_posts(posts, sort_field, direction):
-    """Validate sort parameters and return a sorted copy of posts or error dict."""
+    """Validate sort parameters and return a sorted copy of posts or error."""
     if sort_field is None and direction is None:
         return list(posts), None
 
