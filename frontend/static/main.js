@@ -70,3 +70,58 @@ function deletePost(postId) {
     })
     .catch(error => console.error('Error:', error));  // If an error occurs, log it to the console
 }
+
+// Enhance each rendered post card with a Like button and counter below content.
+function attachLikeButtons() {
+    const postsContainer = document.getElementById("post-container")
+        || document.querySelector(".posts-list")
+        || document.body;
+
+    const postCards = document.querySelectorAll(".post, .post-card, article");
+
+    postCards.forEach((card, index) => {
+        if (card.querySelector(".like-btn")) {
+            return;
+        }
+
+        const postId = card.dataset.postId || index + 1;
+
+        const likeWrapper = document.createElement("div");
+        likeWrapper.className = "like-controls";
+
+        const likeButton = document.createElement("button");
+        likeButton.type = "button";
+        likeButton.className = "like-btn";
+        likeButton.dataset.postId = postId;
+        likeButton.textContent = "Like";
+
+        const likeCount = document.createElement("span");
+        likeCount.className = "like-count";
+        likeCount.dataset.likes = "0";
+        likeCount.textContent = "0 likes";
+
+        likeButton.addEventListener("click", () => {
+            const currentLikes = Number(likeCount.dataset.likes || "0") + 1;
+            likeCount.dataset.likes = String(currentLikes);
+            likeCount.textContent = currentLikes === 1
+                ? "1 like"
+                : `${currentLikes} likes`;
+        });
+
+        likeWrapper.appendChild(likeButton);
+        likeWrapper.appendChild(likeCount);
+        card.appendChild(likeWrapper);
+    });
+
+    if (!postsContainer.dataset.likeObserverAttached) {
+        postsContainer.dataset.likeObserverAttached = "true";
+        const observer = new MutationObserver(() => {
+            attachLikeButtons();
+        });
+        observer.observe(postsContainer, { childList: true, subtree: true });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    attachLikeButtons();
+});

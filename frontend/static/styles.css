@@ -89,3 +89,27 @@ body {
 .post button:hover {
     background-color: #cc0000;
 }
+
+.post .like-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.post .like-btn {
+    position: static;
+    background-color: #4466ee;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+}
+
+.post .like-btn:hover {
+    background-color: #3355dd;
+}
+
+.post .like-count {
+    font-size: 14px;
+    color: #444;
+}
